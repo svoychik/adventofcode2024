@@ -12,7 +12,7 @@ public class Day1 {
         List<String[]> parsedValues = lines.stream().map(x -> (x.split("\\s+"))).toList(); 
         List<Integer> arr1 = parsedValues.stream().map(x -> Integer.parseInt(x[0])).sorted().toList();
         List<Integer> arr2 = parsedValues.stream().map(x -> Integer.parseInt(x[1])).sorted().toList();
-
+                                                             Day1.class.
         int res = IntStream.range(0, arr1.size()) 
                 .map(i -> Math.abs(arr1.get(i) - arr2.get(i)))
                 .sum();
