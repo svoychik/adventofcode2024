@@ -6,7 +6,7 @@ import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Day3_2v2 {
+public class Day3_2v1 {
     public static void main(String[] args) throws IOException, URISyntaxException {
         var input = Files.readString(Paths.get(Day3.class.getResource("/day3.txt").toURI()));
 

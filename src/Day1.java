@@ -1,13 +1,15 @@
 import java.io.*;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.IntStream;
 
 public class Day1 {
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, URISyntaxException {
 
-        var lines = Files.readAllLines(Paths.get("resources/input.txt"));
+        var lines = Files.readAllLines(Paths.get(Day1.class.getResource("/input.txt").toURI()));
+
         // pt1
         List<String[]> parsedValues = lines.stream().map(x -> (x.split("\\s+"))).toList(); 
         List<Integer> arr1 = parsedValues.stream().map(x -> Integer.parseInt(x[0])).sorted().toList();
@@ -15,7 +17,6 @@ public class Day1 {
         int res = IntStream.range(0, arr1.size()) 
                 .map(i -> Math.abs(arr1.get(i) - arr2.get(i)))
                 .sum();
-        
         System.out.println(res);
 
         Map<Integer, Integer> freq = new Hashtable<>();
