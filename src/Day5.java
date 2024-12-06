@@ -32,26 +32,23 @@ public class Day5 {
 
         System.out.println("Sum of middle pages (Part 1): " + totalMiddlePageSumPart1);
         System.out.println("Sum of middle pages (Part 2): " + totalMiddlePageSumPart2);
-        
     }
 
-    private static int getMiddlePage(List<Integer> update) {
+    static int getMiddlePage(List<Integer> update) {
         int middleIndex = update.size() / 2;
         return update.get(middleIndex);
     }
 
-    private static boolean isValidUpdate(List<Integer> update, Map<Integer, List<Integer>> orderingRules) {
-        Map<Integer, Integer> position = new HashMap<>();
-        for (int i = 0; i < update.size(); i++) {
-            position.put(update.get(i), i);
-        }
-
-        for (var entry : orderingRules.entrySet()) {
-            int x = entry.getKey();
-            for (int y : entry.getValue()) {
-                if (position.containsKey(x) && position.containsKey(y)) {
-                    if (position.get(x) >= position.get(y)) {
-                        return false;
+    static boolean isValidUpdate(List<Integer> update, Map<Integer, List<Integer>> orderMap) {
+        // O(N)
+        // D=O(N/2 = N)
+        for (int i = 0; i < update.size(); i++) { // O(U)
+            int currentPage = update.get(i);
+            if (orderMap.containsKey(currentPage)) {     //O((D+U)*U)
+                for (int dependentPage : orderMap.get(currentPage)) {
+                    int dependentIndex = update.indexOf(dependentPage); 
+                    if (dependentIndex != -1 && dependentIndex < i) {
+                        return false; // Rule is violated
                     }
                 }
             }
@@ -59,22 +56,41 @@ public class Day5 {
         return true;
     }
 
-    private static Map<Integer, List<Integer>> parseRules(String[] rulesInput) {
-        Map<Integer, List<Integer>> rules = new HashMap<>();
-        for(var rule : rulesInput) {
-            List<Integer> parts = Arrays.stream(rule.split("\\|")).map(Integer::parseInt).toList();
-            var a = parts.get(0); Integer b = parts.get(1);
-            if(rules.containsKey(a)) {
-                rules.get(a).add(b);
+    static boolean isValidUpdateV2(List<Integer> update, Map<Integer, List<Integer>> orderMap) {
+        Map<Integer, Integer> position = new HashMap<>();
+        for (int i = 0; i < update.size(); i++) {
+            position.put(update.get(i), i);
+        }
+
+        for (var entry : orderMap.entrySet()) {
+            int x = entry.getKey();
+            for (int y : entry.getValue()) {
+                if (position.containsKey(x) && position.containsKey(y)) {
+                    if (position.get(x) >= position.get(y)) {
+                        return false; // Rule x|y is violated
+                    }
+                }
             }
-            else {
+        }
+        return true;
+    }
+
+    static Map<Integer, List<Integer>> parseRules(String[] rulesInput) {
+        Map<Integer, List<Integer>> rules = new HashMap<>();
+        for (var rule : rulesInput) {
+            List<Integer> parts = Arrays.stream(rule.split("\\|")).map(Integer::parseInt).toList();
+            var a = parts.get(0);
+            Integer b = parts.get(1);
+            if (rules.containsKey(a)) {
+                rules.get(a).add(b);
+            } else {
                 rules.put(a, new ArrayList<>(List.of(b)));
             }
         }
         return rules;
     }
 
-    private static List<List<Integer>> parseUpdates(String[] updatesInput) {
+    public static List<List<Integer>> parseUpdates(String[] updatesInput) {
         List<List<Integer>> result = new ArrayList<>();
         for (String update : updatesInput) {
             List<Integer> list = Arrays.stream(update.split(","))
@@ -85,7 +101,7 @@ public class Day5 {
         return result;
     }
 
-    private static List<Integer> sortUpdate(List<Integer> update, Map<Integer, List<Integer>> orderingRules) {
+    public static List<Integer> sortUpdate(List<Integer> update, Map<Integer, List<Integer>> orderingRules) {
         Map<Integer, List<Integer>> subGraph = new HashMap<>();
         for (int page : update) {
             if (orderingRules.containsKey(page)) {
@@ -100,7 +116,7 @@ public class Day5 {
         return topologicalSort(subGraph, update);
     }
 
-    private static List<Integer> topologicalSort(Map<Integer, List<Integer>> graph, List<Integer> originalOrder) {
+    public static List<Integer> topologicalSort(Map<Integer, List<Integer>> graph, List<Integer> originalOrder) {
         Map<Integer, Integer> inDegree = new HashMap<>();
         for (int node : graph.keySet()) {
             inDegree.put(node, 0);
