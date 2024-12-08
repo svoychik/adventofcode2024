@@ -7,20 +7,19 @@ import java.util.*;
 public class Day5v2 {
 
     public static void main(String[] args) throws IOException, URISyntaxException {
-        var input = Files.readString(Paths.get(Day5.class.getResource("/day5.txt").toURI()));
-        String[] lines = input.split("\n");
-
-        Map<Integer, List<Integer>> orderMap = Day5.parseRules(lines);
-        List<List<Integer>> updates = Day5.parseUpdates(lines);
+        var input = Files.readString(Paths.get(Day5v2.class.getResource("/day5.txt").toURI()));
+        String[] sections = input.split("\n\n");
+        Map<Integer, List<Integer>> orderingRules = Day5.parseRules((sections[0].split("\n")));
+        var updates = Day5.parseUpdates(sections[1].split("\n"));
 
         int totalPart1 = 0;
         List<List<Integer>> invalidUpdates = new ArrayList<>();
 
-        for (List<Integer> update : updates) {
-            if (Day5.isValidUpdate(update, orderMap)) {
+        for (var update : updates) {
+            if (Day5.isValidUpdate(update, orderingRules)) {
                 totalPart1 += Day5.getMiddlePage(update);
             } else {
-                invalidUpdates.add(update);
+                invalidUpdates.add(new ArrayList<>(update));
             }
         }
 
@@ -29,7 +28,7 @@ public class Day5v2 {
         int totalPart2 = 0;
 
         for (List<Integer> invalidUpdate : invalidUpdates) {
-            List<Integer> fixedUpdate = fixUpdate(orderMap, invalidUpdate);
+            List<Integer> fixedUpdate = fixUpdate(orderingRules, invalidUpdate);
             totalPart2 += Day5.getMiddlePage(fixedUpdate);
         }
 
@@ -38,19 +37,20 @@ public class Day5v2 {
 
     public static List<Integer> fixUpdate(Map<Integer, List<Integer>> orderMap, List<Integer> update) {
         boolean swappedPages;
-
+        
         do {
             swappedPages = false;
 
             for (int i = 0; i < update.size(); i++) {
-                List<Integer> precedeList = orderMap.getOrDefault(update.get(i), new ArrayList<>());
-
-                for (Integer page : precedeList) {
-                    int pageIndex = update.indexOf(page);
+                var x = update.get(i);
+                List<Integer> precedeList = orderMap.getOrDefault(x, new ArrayList<>());
+                for (Integer y : precedeList) {
+                    //check every element of x                    
+                    int pageIndex = update.indexOf(y);
                     if (pageIndex != -1 && pageIndex < i) {
                         // Swap pages to fix order
                         int temp = update.get(pageIndex);
-                        update.set(pageIndex, update.get(i));
+                        update.set(pageIndex, x);
                         update.set(i, temp);
                         swappedPages = true;
                     }

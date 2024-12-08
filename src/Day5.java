@@ -78,7 +78,9 @@ public class Day5 {
     static Map<Integer, List<Integer>> parseRules(String[] rulesInput) {
         Map<Integer, List<Integer>> rules = new HashMap<>();
         for (var rule : rulesInput) {
-            List<Integer> parts = Arrays.stream(rule.split("\\|")).map(Integer::parseInt).toList();
+            List<Integer> parts = new ArrayList<>(
+                    Arrays.stream(rule.split("\\|")).map(Integer::parseInt).toList()
+            );
             var a = parts.get(0);
             Integer b = parts.get(1);
             if (rules.containsKey(a)) {
