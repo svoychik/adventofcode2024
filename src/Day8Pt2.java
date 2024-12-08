@@ -24,7 +24,7 @@ public class Day8Pt2 {
         Set<Day8.Point> antinodes = new HashSet<>();
 
         // For each pair of antennas with the same frequency, find all points on the line
-        for (Map.Entry<Character, List<Day8.Point>> entry : antennasByFreq.entrySet()) {
+        for (var entry : antennasByFreq.entrySet()) {
             List<Day8.Point> ants = entry.getValue();
             int n = ants.size();
             if (n < 2) continue;

@@ -52,7 +52,7 @@ public class Day8 {
 
         Set<String> antinodes = new HashSet<>();
 
-        for (Map.Entry<Character, List<Point>> entry : antennasByFreq.entrySet()) {
+        for (var entry : antennasByFreq.entrySet()) {
             List<Point> ants = entry.getValue();
             int n = ants.size();
             for (int i = 0; i < n; i++) {
