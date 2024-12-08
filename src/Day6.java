@@ -3,7 +3,6 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashSet;
-import java.util.List;
 
 
 public class Day6 {
@@ -17,10 +16,10 @@ public class Day6 {
                 System.out.println("Found obstacle at " + nextPosition);
                 System.out.println("Current direction " + field.guardDirection);
                 var nextDirection = switch (field.guardDirection) {
-                    case Up -> GuardDirection.Right;
-                    case Right -> GuardDirection.Down;
-                    case Left -> GuardDirection.Up;
-                    case Down -> GuardDirection.Left;
+                    case Up -> Direction.Right;
+                    case Right -> Direction.Down;
+                    case Left -> Direction.Up;
+                    case Down -> Direction.Left;
                 };
                 field.guardDirection = nextDirection;
 
@@ -60,13 +59,13 @@ public class Day6 {
     }
     
     public record Position (int x, int y) {};
-    public enum GuardDirection { Up, Right, Left, Down }
+    public enum Direction { Up, Right, Left, Down }
     public static class Field
     {
         public int rows;
         public int cols;
         public Position guardPos;
-        public GuardDirection guardDirection;
+        public Direction guardDirection;
         public final HashSet<Position> obstacles = new HashSet<>();
         public Field(String input)
         {
@@ -84,7 +83,7 @@ public class Day6 {
                         System.out.println("Obstacle #(" + i + "," + j + "): "  + position);
                     }
                     else if (currChar == '^') {
-                        guardDirection = GuardDirection.Up;
+                        guardDirection = Direction.Up;
                         guardPos = new Position(j, i);
                         System.out.println("Guard #(" + i + "," + j + "): "  + guardPos);
                     }
