@@ -8,43 +8,46 @@ public class Day10 {
 
     public static void main(String[] args) throws Exception {
         var input = Files.readString(Paths.get(Day10.class.getResource("/day10.txt").toURI()));
-        System.out.println(findTrailheadScoresSum(input));
+        calculateScoresAndRatings(input);
     }
 
-    private static int findTrailheadScoresSum(String input) {
+    private static void calculateScoresAndRatings(String input) {
         var lines = input.split("\n");
-        int rows = lines.length;
-        int cols = lines[0].length();
-        int[][] map = new int[rows][cols];
+        var rows = lines.length;
+        var cols = lines[0].length();
+        var map = new int[rows][cols];
 
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
+        for (var i = 0; i < rows; i++) {
+            for (var j = 0; j < cols; j++) {
                 map[i][j] = lines[i].charAt(j) - '0';
             }
         }
 
-        int sumOfScores = 0;
+        var sumOfScores = 0;
+        var sumOfRatings = 0;
 
-        for (int r = 0; r < rows; r++) {
-            for (int c = 0; c < cols; c++) {
+        for (var r = 0; r < rows; r++) {
+            for (var c = 0; c < cols; c++) {
                 if (map[r][c] == 0) {
                     sumOfScores += calculateTrailheadScore(map, r, c);
+                    sumOfRatings += calculateTrailheadRating(map, r, c);
                 }
             }
         }
 
-        return sumOfScores;
+        System.out.println("Sum of trailhead scores (Part 1): " + sumOfScores);
+        System.out.println("Sum of trailhead ratings (Part 2): " + sumOfRatings);
     }
 
     private static int calculateTrailheadScore(int[][] map, int startRow, int startCol) {
-        int rows = map.length;
-        int cols = map[0].length;
-        boolean[][] visited = new boolean[rows][cols];
+        var rows = map.length;
+        var cols = map[0].length;
+        var visited = new boolean[rows][cols];
         Queue<int[]> queue = new LinkedList<>();
         queue.add(new int[]{startRow, startCol});
         visited[startRow][startCol] = true;
 
-        int score = 0;
+        var score = 0;
 
         while (!queue.isEmpty()) {
             var current = queue.poll();
@@ -55,12 +58,12 @@ public class Day10 {
                 continue;
             }
 
-            int[] dRow = {-1, 1, 0, 0};
-            int[] dCol = {0, 0, -1, 1};
+            var dRow = new int[]{-1, 1, 0, 0};
+            var dCol = new int[]{0, 0, -1, 1};
 
-            for (int i = 0; i < 4; i++) {
-                int newRow = row + dRow[i];
-                int newCol = col + dCol[i];
+            for (var i = 0; i < 4; i++) {
+                var newRow = row + dRow[i];
+                var newCol = col + dCol[i];
 
                 if (newRow >= 0 && newRow < rows && newCol >= 0 && newCol < cols &&
                         !visited[newRow][newCol] && map[newRow][newCol] == map[row][col] + 1) {
@@ -71,5 +74,44 @@ public class Day10 {
         }
 
         return score;
+    }
+
+    private static int calculateTrailheadRating(int[][] map, int startRow, int startCol) {
+        var rows = map.length;
+        var cols = map[0].length;
+        var distinctPaths = new int[rows][cols];
+        distinctPaths[startRow][startCol] = 1;
+
+        for (var height = 0; height < 9; height++) {
+            for (var r = 0; r < rows; r++) {
+                for (var c = 0; c < cols; c++) {
+                    if (map[r][c] == height && distinctPaths[r][c] > 0) {
+                        var dRow = new int[] { -1, 1, 0, 0 };
+                        var dCol = new int[] { 0, 0, -1, 1 };
+
+                        for (var i = 0; i < 4; i++) {
+                            var newRow = r + dRow[i];
+                            var newCol = c + dCol[i];
+
+                            if (newRow >= 0 && newRow < rows && newCol >= 0 && newCol < cols &&
+                                    map[newRow][newCol] == height + 1) {
+                                distinctPaths[newRow][newCol] += distinctPaths[r][c];
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        var rating = 0;
+        for (var r = 0; r < rows; r++) {
+            for (var c = 0; c < cols; c++) {
+                if (map[r][c] == 9) {
+                    rating += distinctPaths[r][c];
+                }
+            }
+        }
+
+        return rating;
     }
 }
