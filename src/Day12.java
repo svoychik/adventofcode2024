@@ -9,143 +9,113 @@ import java.util.List;
 public class Day12 {
 
     public static void main(String[] args) throws IOException, URISyntaxException {
-        var input = Files.readString(Paths.get(Day11.class.getResource("/day12.txt").toURI()));
+        var input = Files.readString(Paths.get(Day12.class.getResource("/day12.txt").toURI()));
         System.out.println(partOne(input));
         System.out.println(partTwo(input));
     }
 
+    private static final List<Point> DIRECTIONS = List.of(
+            new Point(0, -1), // Up
+            new Point(0, 1),  // Down
+            new Point(-1, 0), // Left
+            new Point(1, 0)   // Right
+    );
 
-    static Point Up = new Point(0, -1);
-    static Point Down = new Point(0, 1);
-    static Point Left = new Point(-1, 0);
-    static Point Right = new Point(1, 0);
+    private static final List<Point[]> CORNER_DIRECTIONS = List.of(
+            new Point[]{new Point(0, -1), new Point(1, 0)},  // Up-Right
+            new Point[]{new Point(1, 0), new Point(0, 1)},   // Right-Down
+            new Point[]{new Point(0, 1), new Point(-1, 0)},  // Down-Left
+            new Point[]{new Point(-1, 0), new Point(0, -1)}  // Left-Up
+    );
 
     public static int partOne(String input) {
-        return calculateFencePrice(input, Day12::findEdges);
+        return calculateFencePrice(input, Day12::countEdges);
     }
 
     public static int partTwo(String input) {
-        return calculateFencePrice(input, Day12::findCorners);
+        return calculateFencePrice(input, Day12::countCorners);
     }
 
-    private static int calculateFencePrice(String input, MeasurePerimeter measure) {
-        Map<Point, Region> regions = getRegions(input);
+    private static int calculateFencePrice(String input, Measure measure) {
+        Map<Point, Character> garden = parseGarden(input);
+        Set<Point> visited = new HashSet<>();
         int totalPrice = 0;
 
-        for (Region region : new HashSet<>(regions.values())) {
-            int perimeter = 0;
-            for (Point point : region.getPoints()) {
-                perimeter += measure.measure(regions, point);
+        for (Point point : garden.keySet()) {
+            if (!visited.contains(point)) {
+                char plantType = garden.get(point);
+                Set<Point> region = findRegion(garden, point, plantType);
+                visited.addAll(region);
+                int perimeter = region.stream().mapToInt(p -> measure.apply(garden, p, plantType)).sum();
+                totalPrice += region.size() * perimeter;
             }
-            totalPrice += region.getPoints().size() * perimeter;
         }
+
         return totalPrice;
     }
 
-    @FunctionalInterface
-    interface MeasurePerimeter {
-        int measure(Map<Point, Region> map, Point point);
-    }
-
-    private static int findEdges(Map<Point, Region> map, Point point) {
-        int result = 0;
-        Region region = map.get(point);
-
-        for (Point direction : List.of(Right, Down, Left, Up)) {
+    private static int countEdges(Map<Point, Character> garden, Point point, char plantType) {
+        int edges = 0;
+        for (Point direction : DIRECTIONS) {
             Point neighbor = new Point(point.x + direction.x, point.y + direction.y);
-            if (!map.containsKey(neighbor) || map.get(neighbor) != region) {
-                result++;
+            if (garden.getOrDefault(neighbor, '\0') != plantType) {
+                edges++;
             }
         }
-        return result;
+        return edges;
     }
 
-    private static int findCorners(Map<Point, Region> map, Point point) {
-        int result = 0;
-        Region region = map.get(point);
+    private static int countCorners(Map<Point, Character> garden, Point point, char plantType) {
+        int corners = 0;
+        for (Point[] pair : CORNER_DIRECTIONS) {
+            Point neighbor1 = new Point(point.x + pair[0].x, point.y + pair[0].y);
+            Point neighbor2 = new Point(point.x + pair[1].x, point.y + pair[1].y);
+            Point corner = new Point(point.x + pair[0].x + pair[1].x, point.y + pair[0].y + pair[1].y);
 
-        List<Point[]> cornerDirections = List.of(
-                new Point[] {Up, Right},
-                new Point[] {Right, Down},
-                new Point[] {Down, Left},
-                new Point[] {Left, Up}
-        );
-
-        for (Point[] directions : cornerDirections) {
-            Point du = directions[0];
-            Point dv = directions[1];
-            Point duNeighbor = new Point(point.x + du.x, point.y + du.y);
-            Point dvNeighbor = new Point(point.x + dv.x, point.y + dv.y);
-            Point cornerNeighbor = new Point(point.x + du.x + dv.x, point.y + du.y + dv.y);
-
-            // Check corner types
-            if ((!map.containsKey(duNeighbor) || map.get(duNeighbor) != region) &&
-                    (!map.containsKey(dvNeighbor) || map.get(dvNeighbor) != region)) {
-                result++;
-            }
-
-            if (map.containsKey(duNeighbor) && map.get(duNeighbor) == region &&
-                    map.containsKey(dvNeighbor) && map.get(dvNeighbor) == region &&
-                    (!map.containsKey(cornerNeighbor) || map.get(cornerNeighbor) != region)) {
-                result++;
+            if ((garden.getOrDefault(neighbor1, '\0') != plantType &&
+                    garden.getOrDefault(neighbor2, '\0') != plantType) ||
+                    (garden.getOrDefault(neighbor1, plantType) == plantType &&
+                            garden.getOrDefault(neighbor2, plantType) == plantType &&
+                            garden.getOrDefault(corner, '\0') != plantType)) {
+                corners++;
             }
         }
-        return result;
+        return corners;
     }
 
-    private static Map<Point, Region> getRegions(String input) {
-        String[] lines = input.split("\n");
+    private static Map<Point, Character> parseGarden(String input) {
         Map<Point, Character> garden = new HashMap<>();
-
+        String[] lines = input.split("\n");
         for (int y = 0; y < lines.length; y++) {
             for (int x = 0; x < lines[y].length(); x++) {
                 garden.put(new Point(x, y), lines[y].charAt(x));
             }
         }
+        return garden;
+    }
 
-        Map<Point, Region> result = new HashMap<>();
-        Set<Point> positions = new HashSet<>(garden.keySet());
+    private static Set<Point> findRegion(Map<Point, Character> garden, Point start, char plantType) {
+        Set<Point> region = new HashSet<>();
+        Queue<Point> queue = new LinkedList<>();
+        queue.add(start);
+        region.add(start);
 
-        while (!positions.isEmpty()) {
-            Point pivot = positions.iterator().next();
-            Region region = new Region();
-            region.addPoint(pivot);
-
-            Queue<Point> queue = new LinkedList<>();
-            queue.add(pivot);
-            char plantType = garden.get(pivot);
-
-            while (!queue.isEmpty()) {
-                Point current = queue.poll();
-                result.put(current, region);
-                positions.remove(current);
-
-                for (Point direction : List.of(Up, Down, Left, Right)) {
-                    Point neighbor = new Point(current.x + direction.x, current.y + direction.y);
-                    if (!region.contains(neighbor) && positions.contains(neighbor) &&
-                            garden.get(neighbor) == plantType) {
-                        region.addPoint(neighbor);
-                        queue.add(neighbor);
-                    }
+        while (!queue.isEmpty()) {
+            Point current = queue.poll();
+            for (Point direction : DIRECTIONS) {
+                Point neighbor = new Point(current.x + direction.x, current.y + direction.y);
+                if (!region.contains(neighbor) && garden.getOrDefault(neighbor, '\0') == plantType) {
+                    region.add(neighbor);
+                    queue.add(neighbor);
                 }
             }
         }
-        return result;
+
+        return region;
     }
 
-    static class Region {
-        private final Set<Point> points = new HashSet<>();
-
-        public void addPoint(Point point) {
-            points.add(point);
-        }
-
-        public boolean contains(Point point) {
-            return points.contains(point);
-        }
-
-        public Set<Point> getPoints() {
-            return points;
-        }
+    @FunctionalInterface
+    interface Measure {
+        int apply(Map<Point, Character> garden, Point point, char plantType);
     }
 }
