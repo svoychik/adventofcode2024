@@ -14,7 +14,7 @@ public class Day14 {
     private static final int PART2_MAX_STEPS = 10000;
 
     public static void main(String[] args) throws IOException, URISyntaxException {
-        String input = Files.readString(Paths.get(Day14.class.getResource("/day14.txt").toURI()));
+        var input = Files.readString(Paths.get(Day14.class.getResource("/day14.txt").toURI()));
         List<Robot> robots = parseInput(input);
 
         int part1Answer = solvePart1(robots);
@@ -104,6 +104,7 @@ public class Day14 {
                 .map(robot -> new Robot(robot.x(), robot.y(), robot.vx(), robot.vy()))
                 .toList();
     }
-    
-    private record Robot(int x, int y, int vx, int vy)  {}
+
+    private record Robot(int x, int y, int vx, int vy) {
+    }
 }

@@ -86,8 +86,8 @@ public class Day10 {
             for (var r = 0; r < rows; r++) {
                 for (var c = 0; c < cols; c++) {
                     if (map[r][c] == height && distinctPaths[r][c] > 0) {
-                        var dRow = new int[] { -1, 1, 0, 0 };
-                        var dCol = new int[] { 0, 0, -1, 1 };
+                        var dRow = new int[]{-1, 1, 0, 0};
+                        var dCol = new int[]{0, 0, -1, 1};
 
                         for (var i = 0; i < 4; i++) {
                             var newRow = r + dRow[i];
