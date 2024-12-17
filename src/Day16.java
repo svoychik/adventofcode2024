@@ -178,6 +178,7 @@ public class Day16 {
 
     static int countTilesOnAnyBestPath(boolean[][] onPath) {
         int count = 0;
+        Queue<PosDir> queue = new LinkedList<>();
         for (int i = 0; i < onPath.length; i++) {
             for (int j = 0; j < onPath[i].length; j++) {
                 if (onPath[i][j]) 
