@@ -2,9 +2,9 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 
-public class Day17Part2 {
+public class Day17 {
     public static void main(String[] args) throws Exception {
-        List<String> input = Files.readAllLines(Paths.get(Day17Part2.class.getResource("/day17.txt").toURI()));
+        List<String> input = Files.readAllLines(Paths.get(Day17.class.getResource("/day17.txt").toURI()));
 
         long regA = Long.parseLong(input.get(0).substring(12));
         long regB = Long.parseLong(input.get(1).substring(12));
