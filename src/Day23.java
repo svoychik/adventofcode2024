@@ -6,7 +6,8 @@ import java.util.stream.Collectors;
 public class Day23 {
     static Set<List<String>> set = new HashSet<>();
     static HashMap<String, List<String>> graph = new HashMap<>();
-
+    static int maxCliqueSize = 0;
+    
     public static void main(String[] args) throws Exception {
         var lines = Files.readAllLines(Paths.get(Day22.class.getResource("day23.txt").toURI()));
         for (String line : lines) {
@@ -21,7 +22,6 @@ public class Day23 {
         keysStartingWithT
                 .forEach(key -> Dfs(key, key, new HashSet<>()));
 
-        // Print all the values from set
         for (List<String> item : set.stream().filter(x -> x.stream().count() == 3).toList()) {
             System.out.println(item);
         }
@@ -29,26 +29,46 @@ public class Day23 {
         System.out.println("Part1 answer: " + set.stream().filter(x -> x.stream().count() == 3).count());
 
         // Find the largest clique
-        List<String> largestClique = new ArrayList<>();
-        for (String node : graph.keySet()) {
-            List<String> clique = findClique(node, new HashSet<>());
-            if (clique.size() > largestClique.size()) {
-                largestClique = clique;
-            }
-        }
-
-        Collections.sort(largestClique);
-        var password = String.join(",", largestClique);
+        var largestClique = findLargestClique();
+        var password = String.join(",", largestClique.stream().sorted().toList());
         System.out.println("Password is; " + password);
     }
 
+    private static Set<String> findLargestClique() {
+        Set<String> largestClique = new HashSet<>();
+
+        // starting from every node
+        for (String node : graph.keySet()) {
+            Set<String> currentClique = new HashSet<>();
+            currentClique.add(node); // Start with the current node
+
+            // Attempt to expand the clique
+            for (String neighbor : graph.get(node)) {
+                if (currentClique.stream().allMatch(member -> graph.get(member).contains(neighbor))) {
+                    currentClique.add(neighbor);
+                }
+            }
+
+            // Update the largest clique if the current one is bigger
+            if (currentClique.size() > largestClique.size()) {
+                largestClique = currentClique;
+            }
+        }
+
+        return largestClique;
+    }
+    
     private static List<String> findClique(String node, Set<String> currentClique) {
         currentClique.add(node);
 
-        // Find all neighbors that can be added to the clique
         List<String> candidates = graph.get(node).stream()
                 .filter(neighbor -> currentClique.stream().allMatch(n -> graph.get(neighbor).contains(n)))
                 .toList();
+
+        // Prune if this branch cannot produce a larger clique
+        if (currentClique.size() + candidates.size() <= maxCliqueSize) {
+            return new ArrayList<>(currentClique);
+        }
 
         List<String> largestSubClique = new ArrayList<>(currentClique);
 
@@ -62,6 +82,7 @@ public class Day23 {
             }
         }
 
+        maxCliqueSize = Math.max(maxCliqueSize, largestSubClique.size());
         return largestSubClique;
     }
 
