@@ -1,12 +1,6 @@
-import javax.swing.*;
-import javax.swing.text.Keymap;
-import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.logging.XMLFormatter;
 import java.util.stream.Collectors;
 
 public class Day23 {
@@ -34,7 +28,41 @@ public class Day23 {
 
         System.out.println("Part1 answer: " + set.stream().filter(x -> x.stream().count() == 3).count());
 
+        // Find the largest clique
+        List<String> largestClique = new ArrayList<>();
+        for (String node : graph.keySet()) {
+            List<String> clique = findClique(node, new HashSet<>());
+            if (clique.size() > largestClique.size()) {
+                largestClique = clique;
+            }
+        }
 
+        Collections.sort(largestClique);
+        var password = String.join(",", largestClique);
+        System.out.println("Password is; " + password);
+    }
+
+    private static List<String> findClique(String node, Set<String> currentClique) {
+        currentClique.add(node);
+
+        // Find all neighbors that can be added to the clique
+        List<String> candidates = graph.get(node).stream()
+                .filter(neighbor -> currentClique.stream().allMatch(n -> graph.get(neighbor).contains(n)))
+                .toList();
+
+        List<String> largestSubClique = new ArrayList<>(currentClique);
+
+        for (String candidate : candidates) {
+            if (!currentClique.contains(candidate)) {
+                Set<String> newClique = new HashSet<>(currentClique);
+                List<String> subClique = findClique(candidate, newClique);
+                if (subClique.size() > largestSubClique.size()) {
+                    largestSubClique = subClique;
+                }
+            }
+        }
+
+        return largestSubClique;
     }
 
     private static void Dfs(String start, String key, Set<String> nodes) {
