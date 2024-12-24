@@ -5,6 +5,9 @@ import java.nio.file.Paths;
 import java.util.*;
 
 public class Day24 {
+    // https://www.reddit.com/r/adventofcode/comments/1hl698z/comment/m3l1rbe/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
+    // https://github.com/D3STNY27/advent-of-code-2024/blob/5e690ea54c07eb3ec34998a100092f0c1dff133c/day-24/part-2.py
+    // https://github.com/D3STNY27/advent-of-code-2024/tree/main/day-24 
     public static void main(String[] args) throws IOException, URISyntaxException {
         var lines = Files.readAllLines(Paths.get(Day24.class.getResource("day24.txt").toURI()));
 
