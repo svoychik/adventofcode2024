@@ -72,13 +72,13 @@ function buildSummary(resultsByDay) {
         core.summary.addHeading(`Day ${day}`, 3);
         const tableData = [
             [
-                { data: 'Class Name', header: true },
+                { data: 'Class Name 🗒️', header: true },
                 { data: 'Status', header: true },
-                { data: 'Duration (ms)', header: true },
+                { data: 'Duration (ms) ⏱️', header: true },
             ],
         ];
         for (const row of resultsByDay[day]) {
-            tableData.push([`\`${row.className}\``, row.status, row.duration.toString()]);
+            tableData.push([`\`${row.className}\``, row.status == 'Success' ? '✅' : '⛔', row.duration.toString()]);
         }
         core.summary.addTable(tableData);
     }
