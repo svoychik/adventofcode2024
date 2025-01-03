@@ -25,14 +25,14 @@ jobs:
 
       - name: Compile all Java files and copy resources
         run: |
-          mkdir -p out
-          javac -d out src/*.java
-          cp -r src/resources out/resources
+          mkdir -p out/src
+          javac -d out/src src/*.java
+          cp -r src/resources out/src/resources
 
       - name: Run each Java file and print output to console
         run: |
           for file in src/*.java; do
             class_name=$(basename "${file}" .java)
             echo "Running $class_name..."
-            java -cp "out" "$class_name" || echo "Execution failed for $class_name"
+            java -cp "out/src" "$class_name" || echo "Execution failed for $class_name"
           done
