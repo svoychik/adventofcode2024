@@ -3,9 +3,14 @@ name: Build and Run Java Files
 on:
   push:
     branches: [ "main" ]
+    paths-ignore:
+      - '**/*.md'
   pull_request:
     branches: [ "main" ]
+    paths-ignore:
+      - '**/*.md'
   workflow_dispatch:
+
 
 jobs:
   build-and-run:
@@ -39,5 +44,4 @@ jobs:
         with:
           script: |
             const { execSync } = require('child_process');
-            // Just call your local `scripts/run.js`
             execSync('node scripts/run.js', { stdio: 'inherit' });
