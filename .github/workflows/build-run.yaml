@@ -2,19 +2,16 @@ name: Build and Run Java Files
 
 on:
   push:
-    branches:
-      - main
+    branches: [ "main" ]
   pull_request:
-    branches:
-      - main
+    branches: [ "main" ]
   workflow_dispatch:
 
 jobs:
   build-and-run:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v3
 
       - name: Set up Java
@@ -23,39 +20,24 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
-      - name: Compile all Java files and copy resources
+      - name: Compile and copy resources
         run: |
           mkdir -p out/src
           javac -d out/src src/*.java
-          cp src/resources/*.txt out/src
+          cp src/resources/*.txt out/src || echo "No resource files found."
+      
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
 
-      - name: Run each Java file in day order
-        run: |
-          # Gather all Java files that match "Day*.java", sorted naturally
-          files=$(ls src/Day*.java 2>/dev/null | sort -V)
+      - name: Install dependencies
+        run: npm install
 
-          if [ -z "$files" ]; then
-            echo "No matching files (Day*.java) found."
-            exit 0
-          fi
-
-          current_day=""
-
-          for file in $files; do
-            class_name=$(basename "$file" .java)
-            # Extract the numeric day part from "DayXX..." (e.g. "Day11Optimized" -> "10")
-            day_number=$(echo "$class_name" | sed -n 's/^Day\([0-9]\+\).*/\1/p')
-
-            # Whenever day_number changes, print a nice header
-            if [ "$day_number" != "$current_day" ]; then
-              echo ""
-              echo "======================================="
-              echo " Day $day_number"
-              echo "======================================="
-              current_day="$day_number"
-            fi
-
-            echo "Running $class_name..."
-            java -cp "out/src" "$class_name" || echo "Execution failed for $class_name"
-            echo ""
-          done
+      - name: Run Java files & produce summary
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const { execSync } = require('child_process');
+            // Just call your local `scripts/run.js`
+            execSync('node scripts/run.js', { stdio: 'inherit' });
