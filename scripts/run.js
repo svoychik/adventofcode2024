@@ -73,7 +73,7 @@ async function main() {
 
       // Append to summary
       summaryTable.push([
-        `${dayNum} ${dayEmoji[dayNum] || '🔹'}`,
+        `${dayNum} ${'🎄🎄🎄'}`,
         `\`${className}\``,
         statusMsg,
       ]);
