@@ -27,7 +27,7 @@ jobs:
         run: |
           mkdir -p out/src
           javac -d out/src src/*.java
-          cp -r src/resources out/src/resources
+          cp src/resources/*.txt out/src
 
       - name: Run each Java file and print output to console
         run: |
