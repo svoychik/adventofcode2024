@@ -1,89 +1,94 @@
+// scripts/run.js
 const core = require('@actions/core');
 const { execSync } = require('child_process');
-const fs = require('fs');
 const path = require('path');
-
 
 async function main() {
   try {
-    // 1) Find all Day*.class files in out/src, sorted by day number
-    //    We'll do something like "ls out/src/Day*.class" + sort -V
-    let out = '';
-    try {
-      out = execSync('ls out/src/Day*.class 2>/dev/null | sort -V', {
+    const out = execSync('ls out/src/Day*.class 2>/dev/null | sort -V', {
         encoding: 'utf-8',
       }).trim();
-    } catch (e) {
-      // Possibly no matching files
-    }
 
     const classFiles = out ? out.split('\n') : [];
     if (classFiles.length === 0) {
-      console.log('No compiled classes named Day*.class found.');
+      console.log('No compiled classes named "Day*.class" found in out/src.');
       return;
     }
 
-    // 2) Prepare a summary table
-    const summaryTable = [
-      [
-        { data: 'Day', header: true },
-        { data: 'Class Name', header: true },
-        { data: 'Status', header: true },
-      ],
-    ];
+    // 2) We'll store results in a map from day => array of results
+    //    For each day, we keep { className, status, durationMs }
+    const resultsByDay = {};
 
-    let currentDay = null;
-
-    // 3) For each Day*.class, extract the day number, run it, etc.
+    // 3) Run each class, measure time
     for (const filePath of classFiles) {
-      // e.g. out/src/Day10.class → Day10
-      const base = path.basename(filePath, '.class');
-      const className = base; // e.g. Day10
-
-      // Extract the day number from "Day10", "Day10Part2", etc.
+      const className = path.basename(filePath, '.class'); // e.g. "Day10Part2"
       const match = className.match(/^Day(\d+)/);
-      if (!match) {
-        continue; // skip if it doesn't match "DayNN"
-      }
+      if (!match) continue;
+
       const dayNum = match[1];
 
-      // If day changed, print a console heading
-      if (dayNum !== currentDay) {
-        currentDay = dayNum;
-        const emoji = '🎄🔹🎄';
-        console.log('========================================');
-        console.log(` Day ${dayNum} ${emoji}`);
-        console.log('========================================\n');
+      // Ensure there's a bucket for this day
+      if (!resultsByDay[dayNum]) {
+        resultsByDay[dayNum] = [];
       }
 
-      console.log(`Running ${className}...`);
+      console.log(`Running ${className} (Day ${dayNum})...`);
+      const start = Date.now();
+
       let exitCode = 0;
       let stdout = '';
       try {
-        // Run the class from out/src
         stdout = execSync(`java -cp out/src ${className}`, { encoding: 'utf-8' });
       } catch (error) {
         exitCode = error.status || 1;
         stdout = error.stdout?.toString() || '';
       }
+      const end = Date.now();
+      const durationMs = end - start;
 
       console.log(stdout);
-      const statusMsg = exitCode === 0 ? '✅ Success' : '❌ Failed';
-      console.log(statusMsg, '\n');
+      const statusMsg = exitCode === 0 ? 'Success' : 'Failed';
+      console.log(`${statusMsg} [${durationMs} ms]\n`);
 
-      // Append to summary
-      summaryTable.push([
-        `${dayNum} ${'🎄🎄🎄'}`,
-        `\`${className}\``,
-        statusMsg,
-      ]);
+      // Store the info for this day
+      resultsByDay[dayNum].push({
+        className,
+        status: statusMsg,
+        duration: durationMs,
+      });
     }
 
-    // 4) Write the summary
-    await core.summary
-      .addHeading('Build & Run Java Files - Summary', 2)
-      .addTable(summaryTable)
-      .write();
+    // 4) Now build the Summary content day by day
+    //    Instead of one big table, we create one table *per* day
+    core.summary.addHeading('Build & Run Java Files - Summary', 2);
+
+    // Sort the days numerically
+    const sortedDays = Object.keys(resultsByDay).sort((a, b) => Number(a) - Number(b));
+
+    for (const day of sortedDays) {
+      core.summary.addHeading(`Day ${day}`, 3);
+
+      // Build a small table for this day
+      const tableData = [
+        [
+          { data: 'Class Name', header: true },
+          { data: 'Status', header: true },
+          { data: 'Duration (ms)', header: true },
+        ],
+      ];
+
+      for (const row of resultsByDay[day]) {
+        tableData.push([
+          `\`${row.className}\``,
+          row.status,
+          row.duration.toString(),
+        ]);
+      }
+
+      core.summary.addTable(tableData);
+    }
+
+    await core.summary.write();
 
   } catch (err) {
     core.setFailed(`Script error: ${err.message}`);
