@@ -27,11 +27,19 @@ jobs:
         run: |
           mkdir -p out
           javac -d out src/*.java
+          cp -r src/resources out/
 
-      - name: Run each Java file
+      - name: Run each Java file and collect output
         run: |
+          mkdir -p logs
           for file in src/*.java; do
             class_name=$(basename "${file}" .java)
             echo "Running $class_name..."
-            java -cp out "$class_name" || echo "Execution failed for $class_name"
+            java -cp out "$class_name" > logs/$class_name.log 2>&1 || echo "Execution failed for $class_name" >> logs/$class_name.log
           done
+
+      - name: Upload logs
+        uses: actions/upload-artifact@v3
+        with:
+          name: java-output-logs
+          path: logs/
