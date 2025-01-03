@@ -1,3 +1,5 @@
+[![Build and Run Java Files](https://github.com/svoychik/adventofcode2024/actions/workflows/build-run.yaml/badge.svg)](https://github.com/svoychik/adventofcode2024/actions/workflows/build-run.yaml)
+
 # Advent of Code 2024 🎄✨
 
 Welcome to my **Advent of Code 2024** solutions repository!  
@@ -30,7 +32,12 @@ For **Day 11**, the structure includes:
 
 ---
 
-## 🚀 How to Run
+## Build job 
+[![Build and Run Java Files](https://github.com/svoychik/adventofcode2024/actions/workflows/build-run.yaml/badge.svg)](https://github.com/svoychik/adventofcode2024/actions/workflows/build-run.yaml)
+
+The build-run job is configured to solve daily tasks with the provided default input
+
+## 🚀 How to Run Locally
 
 ### 1. Clone the Repository
 
