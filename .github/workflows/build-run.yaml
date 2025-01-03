@@ -1,0 +1,37 @@
+name: Build and Run Java Files
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-and-run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Compile all Java files
+        run: |
+          mkdir -p out
+          javac -d out src/*.java
+
+      - name: Run each Java file
+        run: |
+          for file in src/*.java; do
+            class_name=$(basename "${file}" .java)
+            echo "Running $class_name..."
+            java -cp out "$class_name" || echo "Execution failed for $class_name"
+          done
